@@ -1,6 +1,12 @@
 # Proyecto 1 · Mi web en AWS — Librería Tinta
 Mario Cerdá Baño · 2º DAW · AWS Learner Lab (us-east-1)
 
+## Arquitectura
+
+![Diagrama de la arquitectura](img/diagrama.png)
+
+Una VPC con una subred pública en `us-east-1a`. El tráfico de internet entra por el Internet Gateway, la tabla de rutas lo dirige a la subred y el grupo de seguridad solo deja pasar HTTP (a todos) y SSH (solo desde mi IP) hasta el servidor web.
+
 ## B1. La red
 
 He creado la red a mano desde la consola de VPC, recurso por recurso:
