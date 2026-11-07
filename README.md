@@ -64,3 +64,45 @@ Estimación con la AWS Pricing Calculator de la instancia `t3.micro` encendida 2
 ![Costes](img/b4-costes.png)
 
 **¿Cómo se podría abaratar?** Apagando el servidor fuera del horario de la tienda, ya que solo se pagarían las horas que está encendido. Otra opción sería un Savings Plan a 3 años, que tiene hasta un 72 % de descuento a cambio de comprometerse a usarlo ese tiempo.
+
+## Nivel medio: DNS ponderado
+
+### M1. Segundo servidor y Route 53
+
+He lanzado una segunda instancia, `libreria-web2`, con la misma VPC, subred y grupo de seguridad. Su script [`user-data2.sh`](scripts/user-data2.sh) crea una página con fondo amarillo y el texto "SERVIDOR 2" para distinguirla.
+
+| Servidor | Instancia | IP privada | Peso |
+|---|---|---|---|
+| 1 | `libreria-web` | `10.0.1.234` | 80 |
+| 2 | `libreria-web2` | `10.0.1.202` | 20 |
+
+![Web servidor 1](img/m1-web1.png)
+![Web servidor 2](img/m1-web2.png)
+
+Después he creado una **zona privada** de Route 53, `libreria.lab`, asociada a `libreria-vpc`, con dos registros A para `web.libreria.lab`. Tienen el mismo nombre y el mismo tipo, pero distinto identificador y peso (80 y 20). He puesto un TTL de 10 segundos para que el reparto se note al probar.
+
+![Zona privada](img/m1-zona.png)
+![Registros](img/m1-registros.png)
+
+### Comprobación
+
+Como la zona es privada, `web.libreria.lab` solo se resuelve dentro de la VPC, así que he hecho las pruebas por SSH desde el servidor 1.
+
+Con `dig` se ve que el nombre resuelve a una de las dos IPs privadas, y que responde el DNS de la VPC (`10.0.0.2`):
+
+![dig](img/m1-dig.png)
+
+Con un bucle de `curl` he hecho 15 peticiones, esperando 11 segundos entre una y otra para que no se use la respuesta cacheada. Han respondido 13 veces el servidor 1 y 2 veces el servidor 2, que encaja con un reparto 80/20 (es por probabilidad, no exacto):
+
+![curl](img/m1-curl.png)
+
+### M2. Coste actualizado
+
+Estimación con los 2 servidores encendidos 24/7 y la zona de Route 53:
+
+- **EC2 (2 × t3.micro):** 16,46 USD/mes
+- **Route 53:** 1,20 USD/mes
+- **Total:** 17,66 USD/mes (211,92 USD/año)
+- **Enlace:** [Ver estimación](https://calculator.aws/#/estimate?id=bcda615637113c53a1f317239473151cc428b8f1)
+
+![Costes M2](img/m2-costes.png)
