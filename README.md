@@ -106,3 +106,20 @@ Estimación con los 2 servidores encendidos 24/7 y la zona de Route 53:
 - **Enlace:** [Ver estimación](https://calculator.aws/#/estimate?id=bcda615637113c53a1f317239473151cc428b8f1)
 
 ![Costes M2](img/m2-costes.png)
+
+## Nivel avanzado: despliegue con la AWS CLI
+
+He automatizado los pasos B2 y B3 con el script [`desplegar.sh`](scripts/desplegar.sh), reutilizando la red de B1. El script:
+
+1. Busca la AMI más reciente de Amazon Linux 2023.
+2. Crea el grupo de seguridad `libreria-web-cli-sg` y le abre HTTP (80) a todos y SSH (22) solo a mi IP.
+3. Lanza una instancia `t3.micro` en `libreria-publica` con el `user-data1.sh` y las etiquetas del proyecto.
+4. Espera a que la instancia esté en ejecución, saca su IP pública y muestra la URL.
+
+Lo he ejecutado desde CloudShell, subiendo antes `desplegar.sh` y `user-data1.sh`:
+
+![Salida del script](img/a-salida.png)
+
+**La web desplegada por el script:**
+
+![Web desplegada con el script](img/a-web.png)
