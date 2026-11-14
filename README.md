@@ -1,6 +1,8 @@
 # Proyecto 1 · Mi web en AWS — Librería Tinta
 Mario Cerdá Baño · 2º DAW · AWS Learner Lab (us-east-1)
 
+📹 **Vídeo del proyecto:** [Ver en YouTube](https://www.youtube.com/watch?v=Dc90XF0lh_w)
+
 ## Arquitectura
 
 ![Diagrama de la arquitectura](img/diagrama.png)
@@ -123,3 +125,23 @@ Lo he ejecutado desde CloudShell, subiendo antes `desplegar.sh` y `user-data1.sh
 **La web desplegada por el script:**
 
 ![Web desplegada con el script](img/a-web.png)
+
+## Uso de IA
+
+He usado **Claude** como apoyo durante el proyecto, sobre todo para resolver dudas puntuales y entender errores.
+
+### Prompts que me resultaron útiles
+
+- *"Me conecto por SSH a mi instancia EC2 y se queda colgado sin dar error. El grupo de seguridad tiene el puerto 22 abierto a mi IP. ¿Qué puede estar pasando?"* → Resultó que la IP pública de la instancia había cambiado al pararla y arrancarla, y yo seguía usando la antigua.
+- *"¿Cómo compruebo desde dentro de la VPC que el DNS ponderado 80/20 de Route 53 reparte entre los dos servidores?"*
+
+### Errores de la IA que detecté
+
+**1. Las tildes de la web salían rotas.** El primer `user-data1.sh` que me dio tenía las tildes escritas tal cual, y la web mostraba "LibrerÃa" en vez de "Librería". Me dijo que era cosa de nginx y que había que configurarle el charset, pero al ver el código fuente de la página comprobé que `<meta charset="utf-8">` estaba bien y que el texto ya estaba mal dentro del archivo. Lo solucioné escribiendo las tildes como entidades HTML (`&iacute;`, `&oacute;`…).
+
+**2. El bucle para comprobar el 80/20 no funcionaba.** Me propuso un bucle de `curl` que borraba la caché DNS local, pero las 20 peticiones salían siempre del servidor 1. En la salida de `dig` vi que quien responde es el DNS de la VPC (`10.0.0.2`), que guarda la respuesta durante el TTL de 10 segundos. Lo corregí añadiendo un `sleep 11` entre peticiones, y entonces sí respondieron los dos servidores.
+
+### Lo que no hice
+
+No he pegado nunca mis credenciales del Learner Lab en la IA ni las he subido al repositorio.
+
